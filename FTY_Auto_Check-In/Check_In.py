@@ -59,6 +59,16 @@ try:
 except NoSuchElementException:
     print("Error box not found, assuming login succeeded or still processing")
 
+# Try closing the announcement popup if it appears
+try:
+    time.sleep(3)  # 让弹窗渲染出来
+    close_button = driver.find_element(By.CLASS_NAME, "gonggao_tan_button")
+    close_button.click()
+    print("Closed announcement popup.")
+    time.sleep(1)  # 关闭动画时间
+except NoSuchElementException:
+    print("No announcement popup appeared.")
+
 # Enter check-in page and perform check-in
 driver.find_element(By.CLASS_NAME, "qiandao").click()
 time.sleep(3)
