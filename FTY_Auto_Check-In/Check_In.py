@@ -3,10 +3,15 @@ from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
+import os
 import json
 import time
 
-def load_or_create_config(config_path="config.json"):
+# Always save/read config.json in the same folder as this script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(script_dir, "config.json")
+
+def load_or_create_config(config_path=config_path):
     config = {}
     try:
         with open(config_path, "r", encoding="utf-8") as f:
