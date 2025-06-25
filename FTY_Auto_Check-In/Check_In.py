@@ -11,6 +11,7 @@ import time
 script_dir = os.path.dirname(os.path.abspath(__file__))
 config_path = os.path.join(script_dir, "config.json")
 
+# load and create config.json if it can't be loaded
 def load_or_create_config(config_path=config_path):
     config = {}
     try:
@@ -28,6 +29,30 @@ def load_or_create_config(config_path=config_path):
         print("- Configuration saved to config.json")
     return config
 
+# try to log in
+def attempt_login(driver, email, password):
+    driver.find_element(By.ID, "regusername").clear()
+    driver.find_element(By.ID, "regusername").send_keys(email)
+    driver.find_element(By.ID, "regpassword").clear()
+    driver.find_element(By.ID, "regpassword").send_keys(password)
+    driver.find_element(By.CLASS_NAME, "loginbutton").click()
+    time.sleep(5)
+
+    # Check if login succeeded
+    try:
+        error_box = driver.find_element(By.ID, "tancuowu")
+        style = error_box.get_attribute("style")
+        if "display: none" not in style:
+            error_text = error_box.text.strip()
+            print(f"Login failed, error message: {error_text or 'Unknown error'}")
+            return False
+        else:
+            print("Login successful (error box hidden)")
+            return True
+    except NoSuchElementException:
+        print("Login successful (error box not found)")
+        return True
+
 # Load account credentials
 config = load_or_create_config()
 email = config["email"]
@@ -41,28 +66,19 @@ driver.get("https://飞兔.com")
 time.sleep(3)
 
 # Login
-driver.find_element(By.ID, "regusername").send_keys(email)
-driver.find_element(By.ID, "regpassword").send_keys(password)
-driver.find_element(By.CLASS_NAME, "loginbutton").click()
-# Wait for page update
-time.sleep(5)
+# First login attempt
+success = attempt_login(driver, email, password)
 
-# Check if login succeeded
-try:
-    error_box = driver.find_element(By.ID, "tancuowu")
-    style = error_box.get_attribute("style")
-    if "display: none" not in style:
-        error_text = error_box.text.strip()
-        if error_text:
-            print(f"Login failed, error message: {error_text}")
-        else:
-            print("Login failed, error box is displayed but contains no message")
-        driver.quit()
-        exit()
-    else:
-        print("Error box not displayed, login succeeded or still processing")
-except NoSuchElementException:
-    print("Error box not found, assuming login succeeded or still processing")
+# Retry once if login failed
+if not success:
+    print("First login attempt failed, retrying once...")
+    time.sleep(2)
+    success = attempt_login(driver, email, password)
+
+if not success:
+    print("Login failed after retry. Exiting.")
+    driver.quit()
+    exit()
 
 # Try closing the announcement popup if it appears
 try:
