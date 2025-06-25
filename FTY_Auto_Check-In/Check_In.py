@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import NoSuchElementException
 import json
 import time
 
@@ -11,18 +12,18 @@ def load_or_create_config(config_path="config.json"):
         with open(config_path, "r", encoding="utf-8") as f:
             config = json.load(f)
         if "email" not in config or "password" not in config:
-            raise ValueError("- 配置文件缺字段")
+            raise ValueError("- Config file missing required fields")
     except (FileNotFoundError, json.JSONDecodeError, ValueError) as e:
-        print("- 配置文件读取失败")
-        email = input("请输入邮箱：")
-        password = input("请输入密码：")
+        print("- Failed to read config file")
+        email = input("Please enter your email: ")
+        password = input("Please enter your password: ")
         config = {"email": email.strip(), "password": password.strip()}
         with open(config_path, "w", encoding="utf-8") as f:
             json.dump(config, f, indent=4, ensure_ascii=False)
-        print("- 配置已保存至 config.json")
+        print("- Configuration saved to config.json")
     return config
 
-# 加载账号密码
+# Load account credentials
 config = load_or_create_config()
 email = config["email"]
 password = config["password"]
@@ -31,16 +32,34 @@ driver_path = r"E:\software\msedgedriver\msedgedriver.exe"
 driver = webdriver.Edge(service=EdgeService(driver_path))
 
 driver.get("https://飞兔.com")
+# Wait for page to load
 time.sleep(3)
 
-# 登录
+# Login
 driver.find_element(By.ID, "regusername").send_keys(email)
 driver.find_element(By.ID, "regpassword").send_keys(password)
 driver.find_element(By.CLASS_NAME, "loginbutton").click()
-
+# Wait for page update
 time.sleep(5)
 
-# 进入签到页面并签到
+# Check if login succeeded
+try:
+    error_box = driver.find_element(By.ID, "tancuowu")
+    style = error_box.get_attribute("style")
+    if "display: none" not in style:
+        error_text = error_box.text.strip()
+        if error_text:
+            print(f"Login failed, error message: {error_text}")
+        else:
+            print("Login failed, error box is displayed but contains no message")
+        driver.quit()
+        exit()
+    else:
+        print("Error box not displayed, login succeeded or still processing")
+except NoSuchElementException:
+    print("Error box not found, assuming login succeeded or still processing")
+
+# Enter check-in page and perform check-in
 driver.find_element(By.CLASS_NAME, "qiandao").click()
 time.sleep(3)
 driver.find_element(By.CLASS_NAME, "invite_get_amount").click()
