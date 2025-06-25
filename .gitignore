@@ -1,2 +1,3 @@
 # 忽略整个.idea文件夹
 .idea/
+config.json
