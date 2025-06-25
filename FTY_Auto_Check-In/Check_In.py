@@ -3,9 +3,16 @@ from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.edge.options import Options
 import os
 import json
 import time
+
+# Configure Edge options for headless mode
+# options = Options()
+# options.add_argument("--headless")           # 开启无头模式
+# options.add_argument("--disable-gpu")        # 禁用 GPU（部分系统下防止崩溃）
+# options.add_argument("--window-size=1920,1080")  # 指定浏览器分辨率（防止定位失败）
 
 # Always save/read config.json in the same folder as this script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -58,7 +65,8 @@ config = load_or_create_config()
 email = config["email"]
 password = config["password"]
 
-driver_path = r"E:\software\msedgedriver\msedgedriver.exe"
+# Initialization for driver
+driver_path = r".\Dependencies\msedgedriver\msedgedriver.exe"
 driver = webdriver.Edge(service=EdgeService(driver_path))
 
 driver.get("https://飞兔.com")
@@ -94,6 +102,6 @@ except NoSuchElementException:
 driver.find_element(By.CLASS_NAME, "qiandao").click()
 time.sleep(3)
 driver.find_element(By.CLASS_NAME, "invite_get_amount").click()
-time.sleep(3)
-
+print("Check in successfully!")
+time.sleep(100)
 driver.quit()
