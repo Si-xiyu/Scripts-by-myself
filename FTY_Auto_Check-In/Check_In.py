@@ -9,10 +9,10 @@ import json
 import time
 
 # Configure Edge options for headless mode
-# options = Options()
-# options.add_argument("--headless")           # 开启无头模式
-# options.add_argument("--disable-gpu")        # 禁用 GPU（部分系统下防止崩溃）
-# options.add_argument("--window-size=1920,1080")  # 指定浏览器分辨率（防止定位失败）
+options = Options()
+options.add_argument("--headless")           # 开启无头模式
+options.add_argument("--disable-gpu")        # 禁用 GPU（部分系统下防止崩溃）
+options.add_argument("--window-size=1920,1080")  # 指定浏览器分辨率（防止定位失败）
 
 # Always save/read config.json in the same folder as this script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -67,7 +67,7 @@ password = config["password"]
 
 # Initialization for driver
 driver_path = r".\Dependencies\msedgedriver\msedgedriver.exe"
-driver = webdriver.Edge(service=EdgeService(driver_path))
+driver = webdriver.Edge(service=EdgeService(driver_path), options=options)
 
 driver.get("https://飞兔.com")
 # Wait for page to load
@@ -103,5 +103,5 @@ driver.find_element(By.CLASS_NAME, "qiandao").click()
 time.sleep(3)
 driver.find_element(By.CLASS_NAME, "invite_get_amount").click()
 print("Check in successfully!")
-time.sleep(100)
+
 driver.quit()
